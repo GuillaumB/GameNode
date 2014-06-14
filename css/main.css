@@ -73,3 +73,38 @@ table {
 }
 
 /* === /Game Section === */
+
+/* === Information Section === */
+#Information{
+	height: 100%;
+	width: 15%;
+
+	position: absolute;
+	top: 0px;
+	right: 0px;
+
+	background: #FFF;
+	border-left: 1px solid #404040;
+
+	padding-top: 70px;
+	box-sizing: border-box;
+}
+
+#Information #sendMsg{
+	height: auto;
+	width: 100%;
+
+	position: absolute;
+	bottom: 10px;
+	left: 0px;
+
+	text-align: center;
+}
+
+#Information #sendMsg input[type="text"]{
+	width: 70%;
+	float: left;
+	margin-left: 10px;
+}
+
+/* === /Information Section === */
