@@ -50,6 +50,13 @@ table {
 	font-size: 2em;
 	padding-top: 25px;
 }
+
+.navbar #car{
+	margin: 0px 5px 0px 20px;
+	position: relative;
+	top: 10px;
+}
+
 /* === /Menu === */
 
 /* === Game Section === */
