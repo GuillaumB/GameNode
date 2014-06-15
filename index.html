@@ -13,6 +13,7 @@
 	<script src="js/socket.js"></script>
 
     <script src="js/navbar.js"></script>
+    <script src="js/app.js"></script>
 </head>
 <body>
 <!-- Menu -->
@@ -26,10 +27,10 @@
     	<input type="text" class="form-control" id="playerName" placeholder="Pseudo">
     	<img src="img/vehicules/vehicule1.png" alt="1" id="car">
         <select name="car" class="form-control" id="carChoice">
-    		<option value="1">Voiture 1</option>
-    		<option value="2">Voiture 2</option>
-            <option value="3">Voiture 3</option>
-            <option value="4">Voiture 4</option>
+    		<option value="vehicule1.png">Voiture 1</option>
+    		<option value="vehicule2.png">Voiture 2</option>
+            <option value="vehicule3.png">Voiture 3</option>
+            <option value="vehicule4.png">Voiture 4</option>
     	</select>
     	<button type="button" class="btn btn-primary navbar-btn" id="play">Let's Play !</button>
     </div>
@@ -44,6 +45,9 @@
 <!-- /Game Section -->
 
 <div id="Information">
+    <div id="msg">
+        
+    </div>
     <div id="sendMsg">
         <input type="text" name="msg" class="form-control">
         <input type="submit" value="Send" class="btn btn-primary">

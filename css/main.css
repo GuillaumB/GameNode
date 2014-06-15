@@ -64,12 +64,14 @@ table {
 	height: 100%;
 	width: 100%;
 
-	padding: 67px 0px 0px;
+	padding: 70px 15% 0px 0px;
 	margin: 0px;
 
 	position: absolute;
 	top: 0px;
 	left: 0px;
+
+	box-sizing: border-box;
 }
 
 /* === /Game Section === */
@@ -88,6 +90,19 @@ table {
 
 	padding-top: 70px;
 	box-sizing: border-box;
+}
+
+#Information p{
+	margin-top: 10px;
+	padding: 0px 10px;
+}
+#Information p.log{
+	color: blue;
+}
+
+#Information p .player{
+	font-style: italic;
+	font-weight: 700;
 }
 
 #Information #sendMsg{
