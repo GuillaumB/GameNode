@@ -8,6 +8,7 @@ function App(){
 	var playerID = null;
 	var playerName = "";
 	var playerCar = "";
+	var playerLife =null
 
 	/**
 	 * Init function - connect the socket and start the App
@@ -34,11 +35,14 @@ function App(){
 			ThisApp.setMap('#GameNode');
 		})
 
+		//activate the reception of server msg to update client's view
+		ThisApp.updateClient();
+
 		/* ----------------------- */
 		jQuery(window).bind('beforeunload', function(){
 			ThisApp.playerQuit();
 		});
-	};
+	}; // /init
 
 	App.prototype.setMap = function(container) {
 		var h = jQuery(container).height();
@@ -46,7 +50,7 @@ function App(){
 
 		jQuery(container).find('#players').height(h).width(w);
 		jQuery(container).find('#map').height(h).width(w);
-	};
+	}; // /setMap
 
 	App.prototype.setPlayer = function(name, car) {
 		if(ThisApp.playerName == undefined){
@@ -56,7 +60,7 @@ function App(){
 			ThisApp.playerID = id.substr(0,ThisApp.idLength);
 			ThisApp.playerName = name;
 			ThisApp.playerCar = car;
-			console.log(ThisApp.playerID);
+			ThisApp.playerLife = 100;
 
 			//disable Pseudo Input
 			jQuery('#playerName').attr('disabled', 'disabled');
@@ -66,7 +70,10 @@ function App(){
 			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
 			
 			//add the player to the game
-			jQuery('#GameNode #players').append('<div id="'+ThisApp.playerID+'" class="player"><h6>'+ThisApp.playerName+'</h6><img src="img/vehicules/'+ThisApp.playerCar+'" alt="'+ThisApp.playerCar+'"></div>');
+			jQuery('#GameNode #players').append('<div id="'+ThisApp.playerID+'" class="player" data-x="35" data-y="35"><h6>'+ThisApp.playerName+'</h6><img src="img/vehicules/'+ThisApp.playerCar+'" alt="'+ThisApp.playerCar+'"></div>');
+		
+			//update the server
+			ThisApp.updateServer();
 		}
 		else{
 			//Change the vehicle
@@ -75,7 +82,7 @@ function App(){
 			jQuery('#GameNode #players #'+ThisApp.playerID).find('img').attr('src', 'img/vehicules/'+car);
 		}
 		jQuery('#GameNode').focus();
-	};
+	}; // /setPlayer
 
 	App.prototype.playerQuit = function() {
 		if(ThisApp.playerName != undefined){
@@ -83,9 +90,12 @@ function App(){
 			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' a quitté le jeu.'});
 			
 			//delete the car of the player
-			jQuery('#playders #'+ThisApp.playerID).empty();
+			jQuery('#players #'+ThisApp.playerID).remove();
+
+			//update the server
+			ThisApp.updateServer();
 		}
-	};
+	}; // /playerquit
 
 
 	App.prototype.chat = function(container) {
@@ -117,10 +127,55 @@ function App(){
 				alert('Vous devez être dans le jeu pour pouvoir utiliser le chat.')
 			}
 		});
+	}; // /chat
+
+	/* ----------------------- */
+	/* Update functions */
+	App.prototype.updateServer = function() {
+		var listPlayers = [];
+		var players = jQuery('#GameNode #players .player');
+
+		players.each(function(i){
+			var $current = jQuery(players[i]);
+			var tmp = {
+				id: $current.attr('id'),
+				name: $current.find('h6').text(),
+				car: $current.find('img').attr('src'),
+				posX: $current.attr('data-x'),
+				posY: $current.attr('data-y'),
+				class: $current.attr('class'),
+				life: 100
+			};
+
+			listPlayers.push(tmp);
+		});
+
+		ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "game", players: listPlayers});
 	};
 
+	App.prototype.updateClient = function() {
+		ThisApp.Socket.on('serveurversclient', function(data){
+			if(data.serviceid == ThisApp.ID && data.type == "game"){
+				var players = data.players;
 
-}
+				for (var i = 0; i < players.length; i++) {
+					var player = players[i];
+					
+					var existPlayer = jQuery('#GameNode #players #'+player.id);
+					if(existPlayer.length != 0){
+						//player already exist
+						jQuery('#GameNode #players #'+player.id).remove();
+					}
+
+
+					jQuery('#GameNode #players').append('<div id="'+player.id+'" class="player" data-x="'+player.posX+'" data-y="'+player.posY+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
+
+				};
+			}
+		});
+	};
+
+} // /App
 
 (function($){$(document).ready(function(){
 	var address = 'http://195.83.128.55';
