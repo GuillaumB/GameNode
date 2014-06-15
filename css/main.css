@@ -72,6 +72,27 @@ table {
 	left: 0px;
 
 	box-sizing: border-box;
+	overflow: hidden;
+}
+
+#GameNode #players,
+#GameNode #map{
+	height: 100%;
+	width: 100%;
+
+	margin: 0px;
+	padding: 0px;
+
+	position: absolute;
+	top: 70px;
+	left: 0px;
+}
+
+#GameNode #players{
+	z-index: 10;
+}
+#GameNode #map{
+	z-index: 1;
 }
 
 #GameNode .player{
@@ -80,10 +101,30 @@ table {
 
 	margin: 0px;
 
+	position: absolute;
+	top: 35px;
+	left: 35px;
+
+
 	overflow: visible;
 }
-#GameNode .player p{
+#GameNode .player img{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+#GameNode .player h6{
+	width: 64px;
+	height: auto;
 
+	position: absolute;
+	left: 50%;
+	top:-15px;
+
+	margin-left: -32px;
+
+	text-align: center;
+	font-size: 0.8em;
 }
 
 /* === /Game Section === */

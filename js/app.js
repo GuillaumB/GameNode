@@ -28,10 +28,24 @@ function App(){
 		//start the Chat/log
 		ThisApp.chat('#Information');
 
+		//Set the size of the map
+		ThisApp.setMap('#GameNode');
+		jQuery(window).resize(function(){
+			ThisApp.setMap('#GameNode');
+		})
+
 		/* ----------------------- */
 		jQuery(window).bind('beforeunload', function(){
 			ThisApp.playerQuit();
 		});
+	};
+
+	App.prototype.setMap = function(container) {
+		var h = jQuery(container).height();
+		var w = jQuery(container).width();
+
+		jQuery(container).find('#players').height(h).width(w);
+		jQuery(container).find('#map').height(h).width(w);
 	};
 
 	App.prototype.setPlayer = function(name, car) {
@@ -46,24 +60,30 @@ function App(){
 
 			//disable Pseudo Input
 			jQuery('#playerName').attr('disabled', 'disabled');
+			jQuery('#play').text('Change Car');
 
 			//show message on the chat
 			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
 			
 			//add the player to the game
-			jQuery('#GameNode #players').append()
-
+			jQuery('#GameNode #players').append('<div id="'+ThisApp.playerID+'" class="player"><h6>'+ThisApp.playerName+'</h6><img src="img/vehicules/'+ThisApp.playerCar+'" alt="'+ThisApp.playerCar+'"></div>');
 		}
 		else{
 			//Change the vehicle
 			ThisApp.playerCar = car;
+
+			jQuery('#GameNode #players #'+ThisApp.playerID).find('img').attr('src', 'img/vehicules/'+car);
 		}
+		jQuery('#GameNode').focus();
 	};
 
 	App.prototype.playerQuit = function() {
 		if(ThisApp.playerName != undefined){
 			//show message on the chat
 			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' a quitté le jeu.'});
+			
+			//delete the car of the player
+			jQuery('#playders #'+ThisApp.playerID).empty();
 		}
 	};
 
