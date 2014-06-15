@@ -1,11 +1,11 @@
 function App(){
 	var ID = null;
 	var Socket = null;
-	var ThisApp = this;
+	var ThisApp = this;	
 
 	/* ----------------------- */
 	/* Player Params */
-
+	var playerID = null;
 	var playerName = "";
 	var playerCar = "";
 
@@ -13,6 +13,12 @@ function App(){
 	 * Init function - connect the socket and start the App
 	 */
 	App.prototype.init = function(address, port, appID) {
+		/* ----------------------- */
+		/* Game Params */
+		ThisApp.maxPlayer = 100;
+		ThisApp.idLength = 6;
+
+		/* ----------------------- */
 		ThisApp.ID = appID;
 		console.info('App launched with ID: '+ThisApp.ID);
 
@@ -21,13 +27,31 @@ function App(){
 
 		//start the Chat/log
 		ThisApp.chat('#Information');
+
+		/* ----------------------- */
+		jQuery(window).bind('beforeunload', function(){
+			ThisApp.playerQuit();
+		});
 	};
 
 	App.prototype.setPlayer = function(name, car) {
+		var d = new Date();
+		var id = String(parseInt(d.getTime()/(Math.random()*ThisApp.maxPlayer)));
+
+		ThisApp.playerID = id.substr(0,ThisApp.idLength);
 		ThisApp.playerName = name;
 		ThisApp.playerCar = car;
+		console.log(ThisApp.playerID);
 
+		//show message on the chat
 		ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
+	};
+
+	App.prototype.playerQuit = function() {
+		if(ThisApp.playerName != undefined){
+			//show message on the chat
+			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' a quitté le jeu.'});
+		}
 	};
 
 
