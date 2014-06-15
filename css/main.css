@@ -74,6 +74,18 @@ table {
 	box-sizing: border-box;
 }
 
+#GameNode .player{
+	height: 32px;
+	width: 32px;
+
+	margin: 0px;
+
+	overflow: visible;
+}
+#GameNode .player p{
+
+}
+
 /* === /Game Section === */
 
 /* === Information Section === */
@@ -90,6 +102,7 @@ table {
 
 	padding-top: 70px;
 	box-sizing: border-box;
+	box-shadow: 0px 0px 15px rgba(0,0,0,0.4);
 }
 
 #Information p{

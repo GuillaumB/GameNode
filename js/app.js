@@ -35,16 +35,29 @@ function App(){
 	};
 
 	App.prototype.setPlayer = function(name, car) {
-		var d = new Date();
-		var id = String(parseInt(d.getTime()/(Math.random()*ThisApp.maxPlayer)));
+		if(ThisApp.playerName == undefined){
+			var d = new Date();
+			var id = String(parseInt(d.getTime()/(Math.random()*ThisApp.maxPlayer)));
 
-		ThisApp.playerID = id.substr(0,ThisApp.idLength);
-		ThisApp.playerName = name;
-		ThisApp.playerCar = car;
-		console.log(ThisApp.playerID);
+			ThisApp.playerID = id.substr(0,ThisApp.idLength);
+			ThisApp.playerName = name;
+			ThisApp.playerCar = car;
+			console.log(ThisApp.playerID);
 
-		//show message on the chat
-		ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
+			//disable Pseudo Input
+			jQuery('#playerName').attr('disabled', 'disabled');
+
+			//show message on the chat
+			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
+			
+			//add the player to the game
+			jQuery('#GameNode #players').append()
+
+		}
+		else{
+			//Change the vehicle
+			ThisApp.playerCar = car;
+		}
 	};
 
 	App.prototype.playerQuit = function() {
@@ -99,7 +112,12 @@ function App(){
 	$('#play').click(function(evt){
 		evt.preventDefault();
 
-		MyApp.setPlayer($('#playerName').val(),$('#carChoice').val());
+		if($('#playerName').val() != ""){
+			MyApp.setPlayer($('#playerName').val(),$('#carChoice').val());
+		}
+		else{
+			alert('Vous devez entrer un Pseudo !');
+		}
 	})
 
 })})(jQuery);
