@@ -93,6 +93,7 @@ table {
 }
 #GameNode #map{
 	z-index: 1;
+	background: url(../img/patterns/snow.png) repeat;
 }
 
 #GameNode .player{
@@ -127,6 +128,27 @@ table {
 	font-size: 0.8em;
 }
 
+#GameNode .player.up img{
+
+}
+#GameNode .player.down img{
+
+}
+#GameNode .player.left img{
+	-webkit-transform:scaleX(1);
+	-moz-transform:scaleX(1);
+	-ms-transform:scaleX(1);
+	-o-transform:scaleX(1);
+	transform:scaleX(1);
+}
+#GameNode .player.right img{
+	-webkit-transform:scaleX(-1);
+	-moz-transform:scaleX(-1);
+	-ms-transform:scaleX(-1);
+	-o-transform:scaleX(-1);
+	transform:scaleX(-1);
+}
+
 /* === /Game Section === */
 
 /* === Information Section === */
@@ -137,6 +159,7 @@ table {
 	position: absolute;
 	top: 0px;
 	right: 0px;
+	z-index: 200;
 
 	background: #FFF;
 	border-left: 1px solid #404040;

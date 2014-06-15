@@ -18,6 +18,7 @@ function App(){
 		/* Game Params */
 		ThisApp.maxPlayer = 100;
 		ThisApp.idLength = 6;
+		ThisApp.speed = 50;
 
 		/* ----------------------- */
 		ThisApp.ID = appID;
@@ -81,7 +82,9 @@ function App(){
 
 			jQuery('#GameNode #players #'+ThisApp.playerID).find('img').attr('src', 'img/vehicules/'+car);
 		}
-		jQuery('#GameNode').focus();
+		jQuery(document).focus();
+
+		ThisApp.detectKey();
 	}; // /setPlayer
 
 	App.prototype.playerQuit = function() {
@@ -162,17 +165,111 @@ function App(){
 					var player = players[i];
 					
 					var existPlayer = jQuery('#GameNode #players #'+player.id);
-					if(existPlayer.length != 0){
-						//player already exist
-						jQuery('#GameNode #players #'+player.id).remove();
+					if(existPlayer.length == 0){
+						jQuery('#GameNode #players').append('<div id="'+player.id+'" class="player" data-x="'+player.posX+'" data-y="'+player.posY+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
 					}
 
-
-					jQuery('#GameNode #players').append('<div id="'+player.id+'" class="player" data-x="'+player.posX+'" data-y="'+player.posY+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
-
+					jQuery('#GameNode #players #'+player.id).css('top', player.posY+'px').css('left', player.posX+'px');
 				};
 			}
 		});
+	};
+
+	/* ----------------------- */
+	/* Game functions */
+
+	App.prototype.detectKey = function() {
+		document.onkeypress = function(){
+			var e = window.event;
+			var keyCode = e.keyCode;
+
+			switch(keyCode) {
+				case 122:
+					// Z - up
+					ThisApp.moveVehicle('up');
+					break;
+
+				case 115:
+					// S - down
+					ThisApp.moveVehicle('down');
+					break;
+
+				case 113:
+					// Q - left
+					ThisApp.moveVehicle('left');
+					break;
+
+				case 100:
+					// D - right
+					ThisApp.moveVehicle('right');
+					break;
+
+				case 32:
+					// Space - fire
+					console.log('Fire');
+					break;
+			}
+		}
+	};
+
+	App.prototype.moveVehicle = function(direction) {
+		var $player = jQuery('#GameNode #players #'+ThisApp.playerID);
+		var topValue = $player.attr('data-y');
+		var leftValue = $player.attr('data-x');
+
+		switch(direction) {
+			case "up":
+				$player.removeClass('down');
+				topValue = "-="+ThisApp.speed;
+				break;
+
+			case "down":
+				$player.removeClass('up');
+				topValue = "+="+ThisApp.speed;
+				break;
+
+			case "left":
+				$player.removeClass('right');
+				leftValue = "-="+ThisApp.speed;
+				break;
+
+			case "right":
+				$player.removeClass('left');
+				leftValue = "+="+ThisApp.speed;
+				break;
+		}
+
+		$player.addClass(direction);
+
+		$player.stop().animate({
+			'top': topValue,
+			'left': leftValue 
+		}, 500, function(){
+			var top = parseInt($player.css('top'));
+			var left = parseInt($player.css('left'));
+
+			if(top < 0){
+				$player.css('top', '16px');
+			}
+
+			if(top > jQuery('#map').height()){
+				$player.css('top', (jQuery('#map').height()-16)+'px');
+			}
+
+			if(left < 0){
+				$player.css('left', '16px');
+			}
+
+			if(left > jQuery('#map').width()){
+				$player.css('left', (jQuery('#map').width()-16)+'px');
+			}
+
+			$player.attr('data-x', parseInt($player.css('left')));
+			$player.attr('data-y', parseInt($player.css('top')));
+
+			//update the server
+			ThisApp.updateServer();
+		});		
 	};
 
 } // /App
