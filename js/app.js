@@ -144,8 +144,8 @@ function App(){
 				id: $current.attr('id'),
 				name: $current.find('h6').text(),
 				car: $current.find('img').attr('src'),
-				posX: $current.attr('data-x'),
-				posY: $current.attr('data-y'),
+				posX: $current.css('left'),
+				posY: $current.css('top'),
 				class: $current.attr('class'),
 				life: 100
 			};
@@ -166,12 +166,18 @@ function App(){
 					
 					var existPlayer = jQuery('#GameNode #players #'+player.id);
 					if(existPlayer.length == 0){
-						jQuery('#GameNode #players').append('<div id="'+player.id+'" class="player" data-x="'+player.posX+'" data-y="'+player.posY+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
+						jQuery('#GameNode #players').append('<div id="'+player.id+'" class="'+player.class+'" data-life="'+player.life+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
 					}
 
-					jQuery('#GameNode #players #'+player.id).css('top', player.posY+'px').css('left', player.posX+'px');
+					jQuery('#GameNode #players #'+player.id).removeClass().addClass(player.class);
+					jQuery('#GameNode #players #'+player.id).animate({
+						'top': player.posY,
+						'left': player.posX
+					});
 				};
 			}
+
+			//remove all players who has quit
 		});
 	};
 
@@ -253,15 +259,15 @@ function App(){
 			}
 
 			if(top > jQuery('#map').height()){
-				$player.css('top', (jQuery('#map').height()-16)+'px');
+				$player.css('top', (jQuery('#map').height()-32)+'px');
 			}
 
 			if(left < 0){
-				$player.css('left', '16px');
+				$player.css('left','16px');
 			}
 
 			if(left > jQuery('#map').width()){
-				$player.css('left', (jQuery('#map').width()-16)+'px');
+				$player.css('left', (jQuery('#map').width()-32)+'px');
 			}
 
 			$player.attr('data-x', parseInt($player.css('left')));
