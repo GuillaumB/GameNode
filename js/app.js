@@ -28,7 +28,7 @@ function App(){
 		ThisApp.Socket = io.connect(address+':'+port);
 
 		//start the Chat/log
-		ThisApp.chat('#Information');
+		ThisApp.chat();
 
 		//Set the size of the map
 		ThisApp.setMap('#GameNode');
@@ -71,7 +71,7 @@ function App(){
 			ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "log", content: ThisApp.playerName+' vient de se connecter !'});
 			
 			//add the player to the game
-			jQuery('#GameNode #players').append('<div id="'+ThisApp.playerID+'" class="player" data-x="35" data-y="35"><h6>'+ThisApp.playerName+'</h6><img src="img/vehicules/'+ThisApp.playerCar+'" alt="'+ThisApp.playerCar+'"></div>');
+			jQuery('#GameNode #players').append('<div id="'+ThisApp.playerID+'" class="player" data-life="100"><h6>'+ThisApp.playerName+'</h6><img src="img/vehicules/'+ThisApp.playerCar+'" alt="'+ThisApp.playerCar+'"></div>');
 		
 			//update the server
 			ThisApp.updateServer();
@@ -85,6 +85,7 @@ function App(){
 		jQuery(document).focus();
 
 		ThisApp.detectKey();
+		ThisApp.clickToFire();
 	}; // /setPlayer
 
 	App.prototype.playerQuit = function() {
@@ -101,36 +102,50 @@ function App(){
 	}; // /playerquit
 
 
-	App.prototype.chat = function(container) {
+	App.prototype.chat = function() {
 		console.info('Chat is running !')
 
 		//Get a msg from server
 		ThisApp.Socket.on('serveurversclient', function(data){
 			if(data.serviceid == ThisApp.ID){
 				if(data.type == 'log'){
-					jQuery(container).find('#msg').append('<p class="log">'+data.content+'</p>');
+					jQuery('#Information').find('#msg').append('<p class="log">'+data.content+'</p>');
 				}
 				else if(data.type == 'msg'){
-					jQuery(container).find('#msg').append('<p class="msg">'+data.content+'</p>');
+					jQuery('#Information').find('#msg').append('<p class="msg">'+data.content+'</p>');
 				}
 			}
 		});
 
+		//unfocus the game when player use the chat
+		jQuery('#Information').find('input[name="msg"]').focus(function(){
+			jQuery('#Information').find('input[name="msg"]').keypress(function(evt){
+				if(evt.keyCode == 13){
+     			evt.preventDefault();
+     			ThisApp.sendChatMsg();
+  			}
+			});
+		});
+
 		//Send a msg
-		jQuery(container).find('input[type="submit"]').click(function(evt){
-			if(ThisApp.playerName != undefined){
-				var inputContent = jQuery(container).find('input[name="msg"]').val();
+		jQuery('#Information').find('input[type="submit"]').click(function(evt){
+			ThisApp.sendChatMsg();
+		});
+	}; // /chat
+
+	App.prototype.sendChatMsg = function() {
+		if(ThisApp.playerName != undefined){
+				var inputContent = jQuery('#Information').find('input[name="msg"]').val();
 				if(inputContent != ""){
 					var msg = '<span class="player">'+ThisApp.playerName+':</span><br>'+inputContent;
 					ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "msg", content: msg});
-					jQuery(container).find('input[name="msg"]').val('');
+					jQuery('#Information').find('input[name="msg"]').val('');
 				}
 			}
 			else{
 				alert('Vous devez être dans le jeu pour pouvoir utiliser le chat.')
 			}
-		});
-	}; // /chat
+	};
 
 	/* ----------------------- */
 	/* Update functions */
@@ -163,17 +178,18 @@ function App(){
 
 				for (var i = 0; i < players.length; i++) {
 					var player = players[i];
-					
-					var existPlayer = jQuery('#GameNode #players #'+player.id);
-					if(existPlayer.length == 0){
-						jQuery('#GameNode #players').append('<div id="'+player.id+'" class="'+player.class+'" data-life="'+player.life+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
-					}
+					if(player.id != ThisApp.playerID){
+						var existPlayer = jQuery('#GameNode #players #'+player.id);
+						if(existPlayer.length == 0){
+							jQuery('#GameNode #players').append('<div id="'+player.id+'" class="'+player.class+'" data-life="'+player.life+'"><h6>'+player.name+'</h6><img src="'+player.car+'" alt="'+player.car.split('/')[-1]+'"></div>')
+						}
 
-					jQuery('#GameNode #players #'+player.id).removeClass().addClass(player.class);
-					jQuery('#GameNode #players #'+player.id).animate({
-						'top': player.posY,
-						'left': player.posX
-					});
+						jQuery('#GameNode #players #'+player.id).removeClass().addClass(player.class);
+						jQuery('#GameNode #players #'+player.id).animate({
+							'top': player.posY,
+							'left': player.posX
+						});
+					}
 				};
 			}
 
@@ -186,42 +202,48 @@ function App(){
 
 	App.prototype.detectKey = function() {
 		document.onkeypress = function(){
-			var e = window.event;
-			var keyCode = e.keyCode;
+			var useChat = jQuery('#Information').find('input[name="msg"]').is(':focus');
 
-			switch(keyCode) {
-				case 122:
-					// Z - up
-					ThisApp.moveVehicle('up');
-					break;
+			if(!useChat){
+				var e = window.event;
+				var keyCode = e.keyCode;
 
-				case 115:
-					// S - down
-					ThisApp.moveVehicle('down');
-					break;
+				switch(keyCode) {
+					case 122:
+						// Z - up
+						ThisApp.moveVehicle('up');
+						break;
 
-				case 113:
-					// Q - left
-					ThisApp.moveVehicle('left');
-					break;
+					case 115:
+						// S - down
+						ThisApp.moveVehicle('down');
+						break;
 
-				case 100:
-					// D - right
-					ThisApp.moveVehicle('right');
-					break;
+					case 113:
+						// Q - left
+						ThisApp.moveVehicle('left');
+						break;
 
-				case 32:
-					// Space - fire
-					console.log('Fire');
-					break;
+					case 100:
+						// D - right
+						ThisApp.moveVehicle('right');
+						break;
+
+					/*
+					case 32:
+						// Space - fire
+						ThisApp.useFire();
+						break;
+					*/
+				}
 			}
 		}
 	};
 
 	App.prototype.moveVehicle = function(direction) {
 		var $player = jQuery('#GameNode #players #'+ThisApp.playerID);
-		var topValue = $player.attr('data-y');
-		var leftValue = $player.attr('data-x');
+		var topValue = $player.css('top');
+		var leftValue = $player.css('left');
 
 		switch(direction) {
 			case "up":
@@ -270,12 +292,21 @@ function App(){
 				$player.css('left', (jQuery('#map').width()-32)+'px');
 			}
 
-			$player.attr('data-x', parseInt($player.css('left')));
-			$player.attr('data-y', parseInt($player.css('top')));
-
 			//update the server
 			ThisApp.updateServer();
 		});		
+	}; // /moveVehicle
+
+	App.prototype.clickToFire = function() {
+		jQuery('#GameNode #players').click(function(evt){
+			evt.preventDefault();
+			console.log(evt);
+		})
+	};
+
+	App.prototype.useFire = function() {
+		var fireDirection = jQuery('#'+ThisApp.playerID).attr('class');
+		console.log(fireDirection);
 	};
 
 } // /App
