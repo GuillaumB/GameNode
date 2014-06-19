@@ -10,6 +10,8 @@ function App(){
 	var playerCar = "";
 	var playerLife =null
 
+	var lastPressedKey = "";
+
 	/**
 	 * Init function - connect the socket and start the App
 	 */
@@ -29,6 +31,9 @@ function App(){
 
 		//start the Chat/log
 		ThisApp.chat();
+
+		//start shoot animation
+		ThisApp.animateShoots()
 
 		//Set the size of the map
 		ThisApp.setMap('#GameNode');
@@ -50,6 +55,7 @@ function App(){
 		var w = jQuery(container).width();
 
 		jQuery(container).find('#players').height(h).width(w);
+		jQuery(container).find('#shoots').height(h).width(w);
 		jQuery(container).find('#map').height(h).width(w);
 	}; // /setMap
 
@@ -85,7 +91,7 @@ function App(){
 		jQuery(document).focus();
 
 		ThisApp.detectKey();
-		ThisApp.clickToFire();
+		//ThisApp.clickToFire(); //use too more resources :(
 	}; // /setPlayer
 
 	App.prototype.playerQuit = function() {
@@ -151,7 +157,9 @@ function App(){
 	/* Update functions */
 	App.prototype.updateServer = function() {
 		var listPlayers = [];
+		var listShoots = [];
 		var players = jQuery('#GameNode #players .player');
+		var shoots = jQuery('#GameNode #shoots .shoot');
 
 		players.each(function(i){
 			var $current = jQuery(players[i]);
@@ -168,14 +176,27 @@ function App(){
 			listPlayers.push(tmp);
 		});
 
-		ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "game", players: listPlayers});
+		shoots.each(function(i){
+			var $current = jQuery(shoots[i]);
+			var tmp = {
+				class: $current.attr('class'),
+				posX: $current.css('left'),
+				posY: $current.css('top')
+			};
+
+			listShoots.push(tmp);
+		});
+
+		ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "game", players: listPlayers, shoots: listShoots});
 	};
 
 	App.prototype.updateClient = function() {
 		ThisApp.Socket.on('serveurversclient', function(data){
 			if(data.serviceid == ThisApp.ID && data.type == "game"){
 				var players = data.players;
+				var shoots = data.shoots;
 
+				// Players update
 				for (var i = 0; i < players.length; i++) {
 					var player = players[i];
 					if(player.id != ThisApp.playerID){
@@ -191,6 +212,9 @@ function App(){
 						});
 					}
 				};
+
+				//Shoots update
+				console.log(shoots);
 			}
 
 			//remove all players who has quit
@@ -212,29 +236,31 @@ function App(){
 					case 122:
 						// Z - up
 						ThisApp.moveVehicle('up');
+						ThisApp.lastPressedKey = "Z";
 						break;
 
 					case 115:
 						// S - down
 						ThisApp.moveVehicle('down');
+						ThisApp.lastPressedKey = "S";
 						break;
 
 					case 113:
 						// Q - left
 						ThisApp.moveVehicle('left');
+						ThisApp.lastPressedKey = "Q";
 						break;
 
 					case 100:
 						// D - right
 						ThisApp.moveVehicle('right');
+						ThisApp.lastPressedKey = "D";
 						break;
-
-					/*
+					
 					case 32:
 						// Space - fire
 						ThisApp.useFire();
 						break;
-					*/
 				}
 			}
 		}
@@ -300,14 +326,70 @@ function App(){
 	App.prototype.clickToFire = function() {
 		jQuery('#GameNode #players').click(function(evt){
 			evt.preventDefault();
-			console.log(evt);
+			ThisApp.useFire(); 
 		})
 	};
 
 	App.prototype.useFire = function() {
-		var fireDirection = jQuery('#'+ThisApp.playerID).attr('class');
-		console.log(fireDirection);
+		var direction = "";
+		var vehiculePosX = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('left'));
+		var vehiculePosY = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('top'));
+
+		if(ThisApp.lastPressedKey == undefined){
+			ThisApp.lastPressedKey = "S";
+		}
+
+		switch(ThisApp.lastPressedKey) {
+			case "Z":
+				direction = "top";
+				break;
+
+			case "S":
+				direction = "bottom";
+				break;
+
+			case "Q":
+				direction = "left";
+				break;
+
+			case "D":
+				direction = "right";
+				break;
+		}
+		
+		//add the fire element
+		jQuery('#GameNode #shoots').append('<div class="shoot '+direction+'" style="top: '+(vehiculePosY+16)+'px; left: '+(vehiculePosX+16)+'px;"></div>');
 	};
+
+	App.prototype.animateShoots = function(){
+		var speed = 100;
+		var shoots = jQuery('#GameNode #shoots .shoot');
+
+		shoots.each(function(i){
+			var $currentShoot = jQuery(shoots[i]);
+			var direction = $currentShoot.attr('class').split(' ')[1];
+
+			switch(direction) {
+				case 'top':
+					$currentShoot.animate({'top': '-='+speed});
+					break
+
+				case 'bottom':
+					$currentShoot.animate({'top': '+='+speed});
+					break
+
+				case 'left':
+					$currentShoot.animate({'left': '-='+speed});
+					break
+
+				case 'right':
+					$currentShoot.animate({'left': '+='+speed});
+					break
+			}
+		});
+
+		setTimeout(ThisApp.animateShoots, 100);
+	}
 
 } // /App
 

@@ -83,6 +83,7 @@ table {
 }
 
 #GameNode #players,
+#GameNode #shoots,
 #GameNode #map{
 	height: 100%;
 	width: 100%;
@@ -97,6 +98,9 @@ table {
 
 #GameNode #players{
 	z-index: 10;
+}
+#GameNode #shoots{
+	z-index: 5;
 }
 #GameNode #map{
 	z-index: 1;
@@ -154,6 +158,25 @@ table {
 	-ms-transform:scaleX(-1);
 	-o-transform:scaleX(-1);
 	transform:scaleX(-1);
+}
+
+#GameNode .shoot{
+	background: #d2322d;
+	border: 1px solid #ac2925;
+	border-radius: 2px;
+	height: 4px;
+	width: 14px;
+	box-shadow: 0px 0px 4px rgba(0,0,0,0.8);
+	position: absolute;
+}
+
+#GameNode .shoot.top,
+#GameNode .shoot.bottom{
+	-webkit-transform:rotate(90deg);
+	-moz-transform:rotate(90deg);
+	-ms-transform:rotate(90deg);
+	-o-transform:rotate(90deg);
+	transform:rotate(90deg);
 }
 
 /* === /Game Section === */
