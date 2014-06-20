@@ -33,7 +33,8 @@ function App(){
 		ThisApp.chat();
 
 		//start shoot animation
-		ThisApp.animateShoots()
+		ThisApp.animateShoots();
+		ThisApp.watchLife();
 
 		//Set the size of the map
 		ThisApp.setMap('#GameNode');
@@ -179,6 +180,8 @@ function App(){
 		shoots.each(function(i){
 			var $current = jQuery(shoots[i]);
 			var tmp = {
+				id: $current.attr('id'),
+				playerId: $current.attr('data-playerid'),
 				class: $current.attr('class'),
 				posX: $current.css('left'),
 				posY: $current.css('top')
@@ -214,10 +217,18 @@ function App(){
 				};
 
 				//Shoots update
-				console.log(shoots);
+				for (var i = 0; i < shoots.length; i++) {
+					var shoot = shoots[i];
+					var existShoot = jQuery("#GameNode #shoots #"+shoot.id);
+					
+					if(existShoot.length == 0){
+						jQuery('#GameNode #shoots').append('<div id="'+shoot.id+'" class="'+shoot.class+'" style="top: '+shoot.posY+'; left: '+shoot.posX+';" data-playerid="'+shoot.playerId+'"></div>')
+					}
+					else{
+						existShoot.css('top', shoot.posY).css('left', shoot.posX);
+					}
+				}
 			}
-
-			//remove all players who has quit
 		});
 	};
 
@@ -335,6 +346,9 @@ function App(){
 		var vehiculePosX = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('left'));
 		var vehiculePosY = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('top'));
 
+		var d = new Date();
+		var id = String(parseInt(d.getTime()/(Math.random()*100000)));
+
 		if(ThisApp.lastPressedKey == undefined){
 			ThisApp.lastPressedKey = "S";
 		}
@@ -358,7 +372,10 @@ function App(){
 		}
 		
 		//add the fire element
-		jQuery('#GameNode #shoots').append('<div class="shoot '+direction+'" style="top: '+(vehiculePosY+16)+'px; left: '+(vehiculePosX+16)+'px;"></div>');
+		jQuery('#GameNode #shoots').append('<div id="'+id.substr(0,8)+'" class="shoot '+direction+'" style="top: '+(vehiculePosY+16)+'px; left: '+(vehiculePosX+16)+'px;" data-playerid="'+ThisApp.playerID+'"></div>');
+	
+		//update the server
+		ThisApp.updateServer();
 	};
 
 	App.prototype.animateShoots = function(){
@@ -368,6 +385,17 @@ function App(){
 		shoots.each(function(i){
 			var $currentShoot = jQuery(shoots[i]);
 			var direction = $currentShoot.attr('class').split(' ')[1];
+
+			var currentPosX = parseInt($currentShoot.css('left'));
+			var currentPosY = parseInt($currentShoot.css('top'));
+
+			if(currentPosX < 0 || currentPosX > jQuery('#GameNode #shoots').width()){
+				$currentShoot.remove();
+			}
+
+			if(currentPosY < 0 || currentPosY > jQuery('#GameNode #shoots').height()){
+				$currentShoot.remove();
+			}
 
 			switch(direction) {
 				case 'top':
@@ -390,6 +418,28 @@ function App(){
 
 		setTimeout(ThisApp.animateShoots, 100);
 	}
+
+	App.prototype.watchLife = function() {
+		var currentPlayerPosX = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('left'));
+		var currentPlayerPosY = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('top'));
+		var playerLife = jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life')
+
+		var shoots = jQuery('#GameNode #shoots .shoot');
+		for(var i = 0; i < shoots.length; i++){
+			var $currentShoot = jQuery(shoots[i]);
+			var currentShootPosX = parseInt($currentShoot.css('left'));
+			var currentShootPosY = parseInt($currentShoot.css('top'));
+
+			/*if(currentShootPosX >= currentPlayerPosX && currentShootPosX <= (currentPlayerPosX+32)){
+				if(currentShootPosY >= currentPlayerPosY && currentShootPosY <= (currentPlayerPosY+32)){
+					//$currentShoot.remove()
+					jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life', playerLife-10);
+				}
+			}*/
+		};
+
+		setTimeout(ThisApp.watchLife, 100);
+	};
 
 } // /App
 
