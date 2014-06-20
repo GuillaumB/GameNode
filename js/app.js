@@ -171,7 +171,7 @@ function App(){
 				posX: $current.css('left'),
 				posY: $current.css('top'),
 				class: $current.attr('class'),
-				life: 100
+				life: $current.attr('data-life')
 			};
 
 			listPlayers.push(tmp);
@@ -209,6 +209,7 @@ function App(){
 						}
 
 						jQuery('#GameNode #players #'+player.id).removeClass().addClass(player.class);
+						jQuery('#GameNode #players #'+player.id).attr('data-life', player.life);
 						jQuery('#GameNode #players #'+player.id).animate({
 							'top': player.posY,
 							'left': player.posX
@@ -422,23 +423,40 @@ function App(){
 	App.prototype.watchLife = function() {
 		var currentPlayerPosX = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('left'));
 		var currentPlayerPosY = parseInt(jQuery('#GameNode #players #'+ThisApp.playerID).css('top'));
-		var playerLife = jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life')
+		var playerLife = jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life');
+
+		if(playerLife == 0){
+			jQuery('#GameNode #players #'+ThisApp.playerID).find('img').attr('src', 'img/explose.gif');
+			jQuery('#GameNode #players #'+ThisApp.playerID).delay(1000).fadeOut(function(){
+				jQuery('#GameNode #players #'+ThisApp.playerID).remove();
+			});
+			//ThisApp.resetPLayer();
+
+			//update the server
+			ThisApp.updateServer();
+		}
 
 		var shoots = jQuery('#GameNode #shoots .shoot');
 		for(var i = 0; i < shoots.length; i++){
 			var $currentShoot = jQuery(shoots[i]);
+			var currentShootID = $currentShoot.attr('id')
+			var currentShootPlayerID = $currentShoot.attr('data-playerid');
 			var currentShootPosX = parseInt($currentShoot.css('left'));
 			var currentShootPosY = parseInt($currentShoot.css('top'));
 
-			/*if(currentShootPosX >= currentPlayerPosX && currentShootPosX <= (currentPlayerPosX+32)){
-				if(currentShootPosY >= currentPlayerPosY && currentShootPosY <= (currentPlayerPosY+32)){
-					//$currentShoot.remove()
-					jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life', playerLife-10);
+			var shootHit = false;
+
+			if(currentShootPlayerID != ThisApp.playerID){
+				if(currentShootPosX >= currentPlayerPosX && currentShootPosX <= (currentPlayerPosX+32)){
+					if(currentShootPosY >= currentPlayerPosY && currentShootPosY <= (currentPlayerPosY+32)){
+						$currentShoot.remove();
+						jQuery('#GameNode #players #'+ThisApp.playerID).attr('data-life', playerLife-10);
+					}
 				}
-			}*/
+			}
 		};
 
-		setTimeout(ThisApp.watchLife, 100);
+		setTimeout(ThisApp.watchLife, 50);
 	};
 
 } // /App
