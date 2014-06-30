@@ -147,6 +147,10 @@ function App(){
 					var msg = '<span class="player">'+ThisApp.playerName+':</span><br>'+inputContent;
 					ThisApp.Socket.emit('clientversserveur', {serviceid: ThisApp.ID, type: "msg", content: msg});
 					jQuery('#Information').find('input[name="msg"]').val('');
+
+					//ScrollBar on bottom
+					var elt = jQuery('#Information #msg');
+					elt.scrollTop(elt.height()+50);
 				}
 			}
 			else{
