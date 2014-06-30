@@ -121,6 +121,10 @@ function App(){
 				else if(data.type == 'msg'){
 					jQuery('#Information').find('#msg').append('<p class="msg">'+data.content+'</p>');
 				}
+
+				//ScrollBar on bottom
+				var elt = jQuery('#Information #msg');
+				elt.scrollTop(elt.height()+50);
 			}
 		});
 
